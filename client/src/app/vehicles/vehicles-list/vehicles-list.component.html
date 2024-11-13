@@ -1,0 +1,35 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col d-flex justify-content-end me-4">
+      <button class="btn btn-success" routerLink="Create">Add Vehicle</button>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Id</th>
+            <th>Model</th>
+            <th>Brand</th>
+            <th>Year</th>
+            <th>Color</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let vehicle of paginatedResult()?.items">
+            <td scope="col">
+              <a class="nav-link" [routerLink]="[ vehicle.id ]">
+                {{ vehicle.id }}
+              </a>
+            </td>
+            <td scope="col">{{ vehicle.model }}</td>
+            <td scope="col">{{ vehicle.brandName }}</td>
+            <td scope="col">{{ vehicle.year }}</td>
+            <td scope="col">{{ vehicle.color }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

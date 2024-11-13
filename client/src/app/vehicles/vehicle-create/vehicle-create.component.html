@@ -1,0 +1,68 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+
+        <div class="row row-cols-1 row-cols sm-2 row-cols-md-3 row-cols-lg-4 g-3 gap-3 mb-4">
+          <div class="col">
+            <label class="form-label" for="Model">Model:</label>
+            <input class="form-control" id="Model" [formControl]="$any(form.controls.model)">
+            <div *ngIf="form.get('model')?.invalid && form.get('model')?.touched">
+              Model is required.
+            </div>
+          </div>
+          <div class="col">
+            <label class="form-label" for="Brand">Brand:</label>
+            <select class="form-select" id="Brand" [formControl]="$any(form.controls.brand)">
+              @if(form.controls.brand.value !== null) {
+                <option [value]="form.controls.brand.value">{{form.controls.brand.value}}</option>
+              }
+              <option *ngFor="let brand of brands" [value]="brand.id">{{ brand.name }}</option>
+            </select>
+            <div *ngIf="form.get('brandId')?.invalid && form.get('brandId')?.touched">
+              Brand is required.
+            </div>
+          </div>
+          <div class="col">
+            <label class="form-label" for="Year">Year:</label>
+            <input class="form-control" id="Year" [formControl]="$any(form.controls.year)" type="number">
+            <div *ngIf="form.get('year')?.invalid && form.get('year')?.touched">
+              Year is required.
+            </div>
+          </div>
+          <div class="col">
+            <label class="form-label" for="Color">Color:</label>
+            <input class="form-control" id="Color" [formControl]="$any(form.controls.color)">
+            <div *ngIf="form.get('color')?.invalid && form.get('color')?.touched">
+              Color is required.
+            </div>
+          </div>
+          <div class="col">
+            <div class="">
+              @for(photo of form.controls.photos.controls; let idx = $index; track idx;) {
+                <div class="d-flex align-items-center mb-3 gap-3 g-3">
+                  <label class="flex-shrink-1" [for]="'urlDeFoto' + idx">URL: </label>
+                  <input class="form-control flex-grow-1" [id]="'urlDeFoto' + idx" type="text" [formControl]="$any(photo.controls.url)">
+                  <button class="btn btn-outline-danger" (click)="deletePhoto(idx)">-</button>
+                </div>
+              }
+          </div>
+          </div>
+        </div>
+
+        <h4>Fotos ({{form.controls.photos.controls.length | number}})</h4>
+
+        <button class="btn btn-success" (click)="addPhoto()">Agregar foto</button>
+
+        <div class="d-flex justify-content-center mt-4">
+          <button class="btn btn-primary" type="submit" [disabled]="form.invalid">Submit</button>
+        </div>
+
+        <code>
+          {{form.value | json}}
+        </code>
+
+      </form>
+    </div>
+  </div>
+</div>
