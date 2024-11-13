@@ -1,6 +1,6 @@
 import { Component, effect, inject, signal } from '@angular/core';
 import { VehiclesService } from '../../services/vehicles.service';
-import { VehicleSummary } from '../../models/vehicles/vehicle-summary';
+import { Vehicle } from '../../models/vehicle';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PaginatedResult } from '../../models/pagination';
@@ -13,12 +13,12 @@ import { PaginatedResult } from '../../models/pagination';
   styleUrl: './vehicles-list.component.scss'
 })
 export class VehiclesListComponent {
-  paginatedResult = signal<PaginatedResult<VehicleSummary[]> | null>(null);
+  paginatedResult = signal<PaginatedResult<Vehicle[]> | null>(null);
 
   private service = inject(VehiclesService);
 
   constructor() {
-    this.service.getVehicles();
+    this.service.getPagedList();
 
     effect(() => {
       this.paginatedResult.set(this.service.paginatedResult());
@@ -28,7 +28,7 @@ export class VehiclesListComponent {
   }
 
   resetFilters() {
-    this.service.resetVehicleParmas();
+    this.service.resetParams();
   }
 
   pageChanged(event: any) {

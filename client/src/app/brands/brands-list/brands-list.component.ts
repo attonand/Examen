@@ -1,29 +1,38 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { BrandSummary } from '../../models/brands/brands-summary';
-import { BrandsService } from '../../services/brands.service';
+import { Component, effect, inject, signal } from '@angular/core';
+import { RouterModule } from '@angular/router';
+import { Brand } from 'src/app/models/brands';
+import { PaginatedResult } from 'src/app/models/pagination';
+import { BrandsService } from 'src/app/services/brands.service';
 
 @Component({
   selector: 'app-brands-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule,],
   templateUrl: './brands-list.component.html',
-  styleUrl: './brands-list.component.scss'
 })
 export class BrandsListComponent {
-  brands: BrandSummary[] = [];
+  paginatedResult = signal<PaginatedResult<Brand[]> | null>(null);
 
-  constructor(private brandService: BrandsService) {
+  private service = inject(BrandsService);
+
+  constructor() {
+    this.service.getPagedList();
+
+    effect(() => {
+      this.paginatedResult.set(this.service.paginatedResult());
+
+      console.log(this.service.paginatedResult());
+    }, { allowSignalWrites: true })
   }
 
-  ngOnInit() {
-    this.loadBrands();
+  resetFilters() {
+    this.service.resetParams();
   }
 
-  loadBrands()
-  {
-    this.brandService
-      .getBrands()
-      .subscribe(data => this.brands = data);
+  pageChanged(event: any) {
+    if (this.service.params().pageNumber != event.page) {
+      this.service.params().pageNumber = event.page;
+    }
   }
 }

@@ -1,7 +1,28 @@
 <div class="container-fluid">
   <div class="row">
+    @if(error() !== null) {
+      <div class="col col-lg-4">
+        <div class="card">
+          <h5 class="card-header">Errores</h5>
+          <div class="card-body">
+            @if(error()?.type === 'ValidationError') {
+              <ul>
+                @for(item of error()!.validationErrors; let idx = $index; track idx) {
+                  <li>
+                    {{ item }}
+                  </li>
+                }
+              </ul>
+            }
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+  
+  <div class="row">
     <div class="col">
-      <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <form (ngSubmit)="onSubmit()" [id]="id">
 
         <div class="row row-cols-1 row-cols sm-2 row-cols-md-3 row-cols-lg-4 g-3 gap-3 mb-4">
           <div class="col">
@@ -13,11 +34,13 @@
           </div>
           <div class="col">
             <label class="form-label" for="Brand">Brand:</label>
-            <select class="form-select" id="Brand" [formControl]="$any(form.controls.brand)">
+            <select class="form-select" id="Brand" name="brand" [(ngModel)]="form.controls.brand.value" (ngModelChange)="optionChanged($event)">
               @if(form.controls.brand.value !== null) {
-                <option [value]="form.controls.brand.value">{{form.controls.brand.value}}</option>
+                <option [value]="form.controls.brand.value">{{form.controls.brand.value.name}}</option>
               }
-              <option *ngFor="let brand of brands" [value]="brand.id">{{ brand.name }}</option>
+              @for(option of brandOptions; let idx = $index; track idx) {
+                <option [value]="option | json">{{ option.name }}</option>
+              }
             </select>
             <div *ngIf="form.get('brandId')?.invalid && form.get('brandId')?.touched">
               Brand is required.

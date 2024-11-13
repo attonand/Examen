@@ -1,18 +1,27 @@
 <div class="container-fluid">
   <div class="row">
+    <div class="col d-flex justify-content-end me-4">
+      <button class="btn btn-success" routerLink="Create">Agregar Marca</button>
+    </div>
+  </div>
+  <div class="row">
     <div class="col">
       <table class="table">
         <thead>
           <tr>
-            <th scope="col">Id</th>
-            <th scope="col">Name</th>
+            <th>ID</th>
+            <th>Nombre</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let brand of brands">
-            <td>{{ brand.id }}</td>
-            <td>{{ brand.name }}</td>
-          </tr>
+          @for(item of paginatedResult()?.items; let idx = $index; track idx) {
+            <td scope="col">
+              <a class="nav-link" [routerLink]="[ item.id ]">
+                {{ item.id }}
+              </a>
+            </td>
+            <td scope="col">{{ item.name }}</td>
+          }
         </tbody>
       </table>
     </div>

@@ -1,126 +1,82 @@
-using API.DataTransferObjects.Photo;
-using API.DataTransferObjects.Vehicle;
 using API.Helpers;
-using API.Models;
+using API.Entities;
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using API.DTOs.Vehicle;
+using API.Interfaces;
 
 namespace API.Controllers;
 
-public class VehiclesController(ApplicationDbContext context, IMapper mapper) : BaseApiController
+public class VehiclesController(IUnitOfWork uow, IMapper mapper, IVehiclesServices service) : BaseApiController
 {
     [HttpGet]
-    public async Task<ActionResult<PagedList<VehicleSummaryResponse>>> GetPagedListAsync([FromQuery]string? term, [FromQuery]int? year, [FromQuery]int pageNumber = 1)
+    public async Task<ActionResult<PagedList<VehicleDto>>> GetPagedListAsync([FromQuery]VehicleParams param)
     {
+        PagedList<VehicleDto> pagedList = await uow.VehicleRepository.GetPagedListAsync(param);
         
-            IQueryable<Vehicle>? query = context.Vehicles
-                .Include(v => v.Brand)
-                .AsNoTracking()
-                .AsQueryable();
+        Response.AddPaginationHeader(new PaginationHeader(
+            pagedList.CurrentPage,
+            pagedList.PageSize,
+            pagedList.TotalCount,
+            pagedList.TotalPages
+        ));
 
-            if(!string.IsNullOrEmpty(term))
-            {
-                query = query.Where(v => v.Model.Contains(term));
-                query = query.Where(v => v.Brand.Name.Contains(term));
-                query = query.Where(v => v.Year.ToString() == term);
-            }
-
-            if(year.HasValue && year.Value > 0)
-            {
-                query = query.Where(v => v.Year == year.Value);
-            } 
-
-
-
-            PagedList<VehicleSummaryResponse>? pagedList = await PagedList<VehicleSummaryResponse>.CreateAsync(
-                query.ProjectTo<VehicleSummaryResponse>(mapper.ConfigurationProvider),  
-                pageNumber)
-            ;
-
-            if (pagedList == null)
-            {
-                return new PagedList<VehicleSummaryResponse>(new List<VehicleSummaryResponse>(), 0, 0, 0);
-            }
-
-            Response.AddPaginationHeader(new PaginationHeader(
-                pagedList.CurrentPage,
-                pagedList.PageSize,
-                pagedList.TotalCount,
-                pagedList.TotalPages
-            ));
-
-            return pagedList;
+        return pagedList;
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult<VehicleDetailResponse>> Get(int id)
+    public async Task<ActionResult<VehicleDto>> GetByIdAsync([FromRoute]int id)
     {
-        try
-        {
-            var vehicle = await context.Vehicles
-                .Include(v => v.Brand)
-                .Include(v => v.Photos)
-                .FirstOrDefaultAsync(v => v.Id == id);
+        VehicleDto? itemToReturn = await uow.VehicleRepository.GetDtoByIdAsync(id);
 
-            if (vehicle == null)
-            {
-                return NotFound();
-            }
+        if (itemToReturn == null) return NotFound($"El vehículo con ID {id} no fue encontrado.");
 
-            var result = new VehicleDetailResponse
-            {
-                Model = vehicle.Model,
-                BrandName = vehicle.Brand.Name,
-                BrandId = vehicle.Brand.Id,
-                Year = vehicle.Year,
-                Color = vehicle.Color,
-                
-                Photos = vehicle.Photos.Select(p => new PhotoSummaryResponse { Id = p.Id, Url = p.URL }).ToList(),
-            };
-            
-            return Ok(result);
-        } catch (Exception ex)
-        {
-            return StatusCode(500);
-        }
+        return itemToReturn;
     }
 
     [HttpPost]
-    public async Task<ActionResult<VehicleDetailResponse>> CreateAsync([FromBody] VehicleCreateRequest request)
+    public async Task<ActionResult<VehicleDto?>> CreateAsync([FromBody] VehicleCreateDto request)
     {
+        if (request.Brand == null) return BadRequest("La marca del vehículo es requerida.");
+
+        if (!request.Brand.Id.HasValue) return BadRequest("El ID de la marca no fue proporcionado.");
+
+        int brandId = request.Brand.Id.Value;
         
-            Brand? brand = await context.Brands
-                .AsNoTracking()
-                .SingleOrDefaultAsync(x => x.Name == request.Brand);
+        if (!await uow.BrandRepository.ExistsByIdAsync(brandId)) return NotFound($"La marca con ID {brandId} no fue encontrada.");
+        
+        // Brand? brand = await uow.BrandRepository.GetAsNoTrackingByIdAsync(brandId);
 
-            if (brand == null) return BadRequest($"No existe marca con ID {request.Brand}");
+        // if (brand == null) return BadRequest($"No existe marca con ID {request.Brand}");
 
-            Vehicle vehicleToCreate = new();
+        Vehicle vehicleToCreate = new();
 
-            vehicleToCreate.BrandId = brand.Id;
-            vehicleToCreate.Model = request.Model;
-            vehicleToCreate.Year = request.Year;
-            vehicleToCreate.Color = request.Color;
+        vehicleToCreate.VehicleBrand = new(brandId);
 
-            if (request.Photos.Count == 0) return BadRequest("Debe agregar al menos una foto");
+        vehicleToCreate.Model = request.Model;
+        vehicleToCreate.Year = request.Year;
+        vehicleToCreate.Color = request.Color;
 
-            foreach(VehiclePhotoCreateDto photo in request.Photos) {
-                if (string.IsNullOrWhiteSpace(photo.Url)) return BadRequest("Las fotos deben tener un URL");
+        if (request.Photos.Count == 0) return BadRequest("Debe agregar al menos una foto.");
 
-                vehicleToCreate.Photos.Add(new() { URL = photo.Url });
-            }
+        foreach(VehiclePhotoCreateDto photo in request.Photos) {
+            if (string.IsNullOrWhiteSpace(photo.Url)) return BadRequest("Las fotos deben tener un URL");
 
-            context.Vehicles.Add(vehicleToCreate);
-            await context.SaveChangesAsync();
+            vehicleToCreate.VehiclePhotos.Add(new(photo.Url));
+        }
 
-            return CreatedAtAction(nameof(Get), new { id = vehicleToCreate.Id }, vehicleToCreate);
+        uow.VehicleRepository.Add(vehicleToCreate);
+        
+        if (!await uow.CompleteAsync()) return BadRequest("Errores al guardar el vehículo.");
+
+        return await uow.VehicleRepository.GetDtoByIdAsync(vehicleToCreate.Id);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<VehicleDetailResponse>> Put(int id, [FromBody] VehicleCreateRequest request)
+    public async Task<ActionResult<VehicleDto>> UpdateAsync(int id, [FromBody] VehicleCreateDto request)
     {
+        
+        await Task.Delay(0);
         
         /*
             var brand = await context.Brands
@@ -163,25 +119,16 @@ public class VehiclesController(ApplicationDbContext context, IMapper mapper) : 
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id)
+    public async Task<ActionResult> DeleteByIdAsync([FromRoute] int id)
     {
-        try
-        {
-            var vehicle = await context.Vehicles.FindAsync(id);
+        if (!await uow.VehicleRepository.ExistsByIdAsync(id)) return NotFound($"El vehículo con ID {id} no fue encontrado.");
 
-            if (vehicle == null)
-            {
-                return NotFound();
-            }
+        Vehicle? itemToDelete = await uow.VehicleRepository.GetByIdAsync(id);
 
-            context.Vehicles.Remove(vehicle);
-            await context.SaveChangesAsync();
+        if (itemToDelete == null) return NotFound($"El vehículo con ID {id} no fue encontrado.");
 
-            return Ok();
-        } catch (Exception ex)
-        {
-            return StatusCode(500);
-        }
+        if (!await service.DeleteAsync(itemToDelete)) return BadRequest($"Error al eliminar el vehículo con ID {id}.");
+
+        return Ok();
     }
-
 }

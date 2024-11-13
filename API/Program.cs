@@ -1,15 +1,15 @@
 using API.Data;
+using API.Extensions;
+using API.Middleware;
 using Microsoft.EntityFrameworkCore;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlite(connectionString));
-builder.Services.AddControllers();
-builder.Services.AddCors();
-builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
-        
-var app = builder.Build();
+builder.Services.AddApplicationServices(builder.Configuration);
+
+WebApplication app = builder.Build();
+
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseCors(x => 
     x.AllowAnyHeader()
@@ -25,7 +25,7 @@ using var scope = app.Services.CreateScope();
 var services = scope.ServiceProvider;
 try
 {
-    var context = services.GetRequiredService<ApplicationDbContext>();
+    var context = services.GetRequiredService<DataContext>();
     await context.Database.MigrateAsync();
     await Seed.SeedAsync(context);
 }

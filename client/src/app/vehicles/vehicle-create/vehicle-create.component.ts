@@ -1,12 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, effect, inject, signal } from '@angular/core';
 import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { BrandSummary } from '../../models/brands/brands-summary';
+import { Brand } from '../../models/brands';
 import { BrandsService } from '../../services/brands.service';
 import { VehiclesService } from '../../services/vehicles.service';
 import { Photo, photosForTesting } from '../../models/photo';
-import { VehicleSummary } from '../../models/vehicles/vehicle-summary';
+import { Vehicle } from '../../models/vehicle';
+import { SelectOption } from 'src/app/models/selectOption';
+import { BadRequest } from 'src/app/models/badRequest';
+import { createId } from '@paralleldrive/cuid2';
 
 type PhotoType = {
   url: AbstractControl<string | null>,
@@ -14,7 +17,7 @@ type PhotoType = {
 };
 
 type FormType = {
-  brand: AbstractControl<string | null>,
+  brand: AbstractControl<SelectOption | null>,
   model: AbstractControl<string | null>,
   year: AbstractControl<number | null>,
   color: AbstractControl<string | null>,
@@ -28,29 +31,33 @@ type FormType = {
     // , RouterModule
   ],
   templateUrl: './vehicle-create.component.html',
-  styleUrl: './vehicle-create.component.scss'
 })
 export class VehicleCreateComponent {
+  error = signal<BadRequest | null>(null);
+  id = createId();
+  
   private brandsService = inject(BrandsService);
   service = inject(VehiclesService);
 
-  brands: BrandSummary[] = [];
+  brandOptions: SelectOption[] = [];
 
   form: FormGroup<FormType> = new FormGroup<FormType>({
-    brand: new FormControl(null) as any,
-    model: new FormControl(null) as any,
-    year: new FormControl(null) as any,
-    color: new FormControl(null) as any,
+    brand: new FormControl<SelectOption | null>(null) as any,
+    model: new FormControl<string | null>(null) as any,
+    year: new FormControl<number | null>(null) as any,
+    color: new FormControl<string | null>(null) as any,
     photos: new FormArray([]) as any,
   });
 
   submitted = signal<boolean>(false);
 
   constructor() {
+    this.brandsService.getOptions().subscribe();
+    
     this.form.patchValue({
       color: 'White',
       model: 'Corolla',
-      brand: 'Toyota',
+      brand: null,
       year: 2024,
     });
 
@@ -59,26 +66,19 @@ export class VehicleCreateComponent {
         url: new FormControl(x.url) as any,
         id: new FormControl(x.id) as any,
       }));
-    })
+    });
+
+    effect(() => {
+      this.brandOptions = this.brandsService.options();
+
+      if (this.brandOptions.length > 0) {
+        this.form.controls.brand.patchValue(this.brandOptions[0]);
+      }
+    });
   }
 
   deletePhoto(idx: number) {
     this.form.controls.photos.removeAt(idx);
-  }
-
-  ngOnInit() {
-    this.loadBrands();
-  }
-
-  loadBrands() {
-    this.brandsService
-      .getBrands()
-      .subscribe({
-        next: data => {
-          this.brands = data;
-          this.form.controls.brand.patchValue(this.brands[0].name);
-        }
-      });
   }
 
   addPhoto() {
@@ -100,9 +100,17 @@ export class VehicleCreateComponent {
     this.submitted.set(true);
 
     this.service.create(this.form.value).subscribe({
-      next: (response: VehicleSummary) => {
+      next: (response: Vehicle) => {
         this.submitted.set(false);
       },
+      error: (error: BadRequest) => {
+        this.error.set(error);
+      }
     })
+  }
+
+  optionChanged(option: string) {
+    const value: SelectOption = JSON.parse(option);
+    this.form.controls.brand.patchValue(new SelectOption({...value}));
   }
 }

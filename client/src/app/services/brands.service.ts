@@ -1,19 +1,72 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
-import { BrandSummary } from '../models/brands/brands-summary';
+import { inject, Injectable, signal } from '@angular/core';
+import { Observable, of, tap } from 'rxjs';
+import { Brand } from 'src/app/models/brands';
+import { PaginatedResult } from 'src/app/models/pagination';
+import { setPaginatedResponse, setPaginationHeaders } from 'src/app/services/paginationHelper';
+import { environment } from 'src/environments/environment';
+import { BrandParams } from 'src/app/models/brandParams';
+import { SelectOption } from 'src/app/models/selectOption';
 
 @Injectable({
   providedIn: 'root'
 })
 export class BrandsService {
-  apiUrl = `${environment.apiUrl}brands`;
+  private http = inject(HttpClient);
 
-  constructor(private http: HttpClient) {
+  baseUrl = `${environment.apiUrl}brands/`;
+  paginatedResult = signal<PaginatedResult<Brand[]> | null>(null);
+  cache = new Map();
+  params = signal<BrandParams>(new BrandParams());
+
+  options = signal<SelectOption[]>([]);
+
+  resetParams() {
+    this.params.set(new BrandParams());
   }
 
-  getBrands(): Observable<BrandSummary[]> {
-    return this.http.get<BrandSummary[]>(this.apiUrl);
+  getPagedList() {
+    const response = this.cache.get(Object.values(this.params()).join('-'));
+
+    if (response) return setPaginatedResponse(response, this.paginatedResult);
+
+    let params = setPaginationHeaders(this.params().pageNumber, this.params().pageSize);
+
+    return this.http.get<Brand[]>(this.baseUrl, {observe: 'response', params}).subscribe({
+      next: response => {
+        setPaginatedResponse(response, this.paginatedResult);
+        this.cache.set(Object.values(this.params()).join('-'), response);
+      }
+    })
+  }
+
+  getById(id: number) {
+    const brand: Brand = [...this.cache.values()]
+      .reduce((arr, elem) => arr.concat(elem.body), [])
+      .find((m: Brand) => m.id === id);
+
+    if (brand) return of(brand);
+
+    return this.http.get<Brand>(`${this.baseUrl}${id}`);
+  }
+
+  update(id: number, model: any) {
+    return this.http.put(`${this.baseUrl}${id}`, model);
+  }
+
+  delete(id: number) {
+    return this.http.delete(`${this.baseUrl}${id}`);
+  }
+
+  create(model: any): Observable<Brand> {
+    return this.http.post<Brand>(`${this.baseUrl}`, model);
+  }
+
+  getOptions(): Observable<SelectOption[]> {
+    return this.http.get<SelectOption[]>(`${this.baseUrl}options`).pipe(
+      tap(response => {
+        this.options.set(response);
+      })
+    )
   }
 }

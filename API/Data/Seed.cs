@@ -1,10 +1,10 @@
-using API.Models;
+using API.Entities;
 
 namespace API.Data;
 
 public static class Seed
 {
-    public static async Task SeedAsync(ApplicationDbContext context)
+    public static async Task SeedAsync(DataContext context)
     {
 
         var brands = new List<Brand>
