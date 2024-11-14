@@ -9,6 +9,9 @@ import { BrandsService } from 'src/app/services/brands.service';
 import { VehiclesService } from 'src/app/services/vehicles.service';
 import { photosForTesting } from 'src/app/models/photo';
 import { Vehicle } from 'src/app/models/vehicle';
+import { Router } from '@angular/router';
+import { ToastService } from 'src/app/services/toast.service';
+import { DomSanitizer } from '@angular/platform-browser';
 
 type PhotoType = {
   url: AbstractControl<string | null>,
@@ -28,10 +31,15 @@ type FormType = {
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, FormsModule],
   templateUrl: './vehicle-create.component.html',
+  styleUrl: './vehicle-create.component.scss'
 })
 export class VehicleCreateComponent {
+  router = inject(Router);
+  toastService = inject(ToastService);
+  sanitizer = inject(DomSanitizer);
   error = signal<BadRequest | null>(null);
   id = createId();
+  url: string | null = null;
   
   private brandsService = inject(BrandsService);
   service = inject(VehiclesService);
@@ -79,27 +87,35 @@ export class VehicleCreateComponent {
   }
 
   addPhoto() {
-    const formGroup = new FormGroup<PhotoType>({
-      url: new FormControl(null) as any,
-      id: new FormControl(null) as any,
-    });
+    if(this.form.controls.photos.length < 5) {
+      const formGroup = new FormGroup<PhotoType>({
+        url: new FormControl(null) as any,
+        id: new FormControl(null) as any,
+      });
 
-    debugger;
-    this.form.controls.photos.push(formGroup);
-    this.form.updateValueAndValidity();
+      this.form.controls.photos.push(formGroup);
+      this.form.updateValueAndValidity();
+    } else {
+      this.toastService.add(this.sanitizer.bypassSecurityTrustHtml(`No es posible agregar más de <b>5 fotos</b>.`), "warning");  
+    }
+  }
+
+  onPhotoChange(url: string | null) {
+    this.url = url;
   }
 
   onSubmit() {
-    debugger;
-
     this.submitted.set(true);
 
     this.service.create(this.form.value).subscribe({
       next: (response: Vehicle) => {
         this.submitted.set(false);
+        this.router.navigate(['/Vehicles', response.id]);
+        this.toastService.add(this.sanitizer.bypassSecurityTrustHtml(`El <b>auto</b> con <b>ID ${response.id}</b> se guardó con éxito.`), "success");
       },
       error: (error: BadRequest) => {
         this.error.set(error);
+        this.toastService.add(this.sanitizer.bypassSecurityTrustHtml(`Ocurrió un error al registrar el <b>auto</b>, inténtelo más tarde.`), "danger");  
       }
     })
   }

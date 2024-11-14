@@ -1,23 +1,38 @@
 .list {
-    display: flex;
-    list-style: none;
-    overflow-x: scroll;
-    scroll-snap-type: x mandatory;
-  }
-  
-  .item {
-    flex-shrink: 0;
-    width: 100%;
-    height: 100%;
-  
-    background-color: #FFF;
-  
-    scroll-snap-align: center;
-  }
-  
-  .vehicle-photo {
-    width: 100%;
-    height: 100%;
+  display: flex;
+  list-style: none;
+  overflow-x: scroll;
+  scroll-snap-type: x mandatory;
+  width: 100%;
+  height: 400px;
 
-    object-fit: cover;
-  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.card-image-text {
+  top: 220px;
+  height: 180px;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(255,255,255,0) 100%);
+}
+
+.list::-webkit-scrollbar {
+  display: none;
+}
+
+.item {
+  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+
+  scroll-snap-align: center;
+}
+
+.vehicle-photo {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.8) 0%, rgba(255,255,255,0) 100%);
+
+}

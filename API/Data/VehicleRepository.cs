@@ -52,15 +52,19 @@ public class VehicleRepository(DataContext context, IMapper mapper) : IVehicleRe
         ;
 
         if(!string.IsNullOrEmpty(param.Term))
-        {
-            query = query.Where(x => !string.IsNullOrEmpty(x.Model) && x.Model == param.Term);
-            query = query.Where(x => x.Year.HasValue && x.Year.ToString() == param.Term);
-            query = query.Where(x => x.VehicleBrand != null &&
+        {   
+            query = query.Where(x => 
+                !string.IsNullOrEmpty(x.Model) && x.Model.Contains(param.Term)
+                ||
+                x.Year.HasValue && x.Year.ToString() == param.Term
+                ||
+                x.VehicleBrand != null &&
                 x.VehicleBrand.Brand != null &&
                 !string.IsNullOrEmpty(x.VehicleBrand.Brand.Name) &&
-                x.VehicleBrand.Brand.Name == param.Term
+                x.VehicleBrand.Brand.Name.Contains(param.Term)
+                ||
+                !string.IsNullOrEmpty(x.Model) && x.Model == param.Term
             );
-            query = query.Where(x => !string.IsNullOrEmpty(x.Model) && x.Model == param.Term);
         }
 
         if(param.Year.HasValue && param.Year.Value > 0) {

@@ -1,33 +1,30 @@
-<div class="container">
+<div class="container w-25">
     @if(item !== null) {
         <div class="row">
             <div class="col">
-                <div class="card">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>{{ item.model }}</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col d-flex justify-content-end">
-                                    <button class="btn btn-primary" [routerLink]="[ 'Edit' ]">Editar</button>
-                                </div>
-                            </div>                            
-
-                            <ul class="list-group list-group-flush">
-                                <li class="list-group-item">{{ item.brand?.name }}</li>
-                                <li class="list-group-item">{{ item.color }}</li>
-                                <li class="list-group-item">{{ item.year }}</li>
-                              </ul>
-                              <div class="list">
-                                @for(photo of item.photos; let idx = $index; track idx)
-                                {
-                                    <div class="item">
-                                        <img [src]="photo.url" class="rounded mx-auto d-block vehicle-photo" [alt]="'Foto de auto ' + item.model + ' ' + item.year">
-                                    </div>
-                                }
+                <div class="card shadow">
+                    <div class="position-absolute card-image-text w-100 d-flex align-items-end p-3">
+                        <h2 class="text-white">{{ item.model }} {{ item.year }}</h2>
+                    </div>
+                    <div class="card-img-top list">
+                        @for(photo of item.photos; let idx = $index; track idx)
+                        {
+                            <div class="item">
+                                <img [src]="photo.url" class="rounded mx-auto d-block vehicle-photo" [alt]="'Foto de auto ' + item.model + ' ' + item.year">
                             </div>
-                        </div>
+                        }
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col d-flex justify-content-end">
+                                <button class="btn btn-outline-primary" [routerLink]="[ 'Edit' ]">Editar</button>
+                            </div>
+                        </div>                            
+
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><h4>{{ item.brand?.name }}</h4></li>
+                            <li class="list-group-item"><h6>{{ item.color }}</h6></li>
+                        </ul>
                     </div>
                 </div>
             </div>

@@ -1,45 +1,72 @@
-<div class="container-fluid">
-  <div class="row">
-    <div class="col d-flex justify-content-end me-4">
-      <button class="btn btn-success" routerLink="Create">Agregar Vehículo</button>
-    </div>
-  </div>
+<div class="container-fluid w-75">
   <div class="row">
     <div class="col">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Id</th>
-            <th>Modelo</th>
-            <th>Marca</th>
-            <th>Año</th>
-            <th>Color</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for(item of paginatedResult()?.items; let idx = $index; track idx) {
-            
-          }
-          <tr *ngFor="let vehicle of paginatedResult()?.items">
-            <td scope="col">{{ vehicle.id }}</td>
-            <td scope="col">{{ vehicle.model }}</td>
-            <td scope="col">{{ vehicle.brand?.name }}</td>
-            <td scope="col">{{ vehicle.year }}</td>
-            <td scope="col">{{ vehicle.color }}</td>
-            <td scope="col">
-              <div class="d-flex justify-content-end">
-                <button class="btn btn-outline-primary me-2" [routerLink]="[ vehicle.id ]">
-                  Detalles
-                </button>
-                <button class="btn btn-outline-danger" (click)="removeItem($any(vehicle.id))">
-                  Eliminar
-                </button>
-              </div>
-          </td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="card shadow">
+        <div class="card-body">
+          
+            <div class="mb-3 d-flex">
+              <input type="text" placeholder="Buscar por..." class="form-control me-2" id="filter-term" aria-describedby="search" [(ngModel)]="term" (ngModelChange)="onSearchChange()">
+              <input type="number" placeholder="Año..." class="form-control me-2" id="filter-term" aria-describedby="search" [(ngModel)]="year" (ngModelChange)="onSearchChange()">
+              <a class="btn btn-outline-primary px-3 me-2" (click)="applyFilters()"><fa-icon [icon]="['fas', 'magnifying-glass']"></fa-icon></a>
+              <a class="btn btn-outline-secondary px-3" (click)="resetFilters()"><fa-icon [icon]="['fas', 'broom']"></fa-icon></a>
+              
+            </div>
+          
+            <table class="table">
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Modelo</th>
+                <th>Marca</th>
+                <th>Año</th>
+                <th>Color</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for(item of paginatedResult()?.items; let idx = $index; track idx) {
+                
+              }
+              <tr *ngFor="let vehicle of paginatedResult()?.items">
+                <td scope="col">{{ vehicle.id }}</td>
+                <td scope="col">{{ vehicle.model }}</td>
+                <td scope="col">{{ vehicle.brand?.name }}</td>
+                <td scope="col">{{ vehicle.year }}</td>
+                <td scope="col">{{ vehicle.color }}</td>
+                <td scope="col">
+                  <div class="d-flex justify-content-end">
+                    <a class="btn btn-outline-primary me-2" [routerLink]="[ vehicle.id ]">
+                      <fa-icon [icon]="['fas', 'info']"></fa-icon>
+                    </a>
+                    <a class="btn btn-outline-danger" (click)="removeItem($any(vehicle.id))">
+                      <fa-icon [icon]="['fas', 'trash']"></fa-icon>
+                    </a>
+                  </div>
+              </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div class="d-flex justify-content-center">
+            <pagination 
+              [boundaryLinks]="true" 
+              [totalItems]="paginatedResult()?.pagination!.totalItems"
+              [itemsPerPage]="paginatedResult()?.pagination!.itemsPerPage"
+              (pageChanged)="pageChanged($event)"
+              [(ngModel)]="paginatedResult()?.pagination!.currentPage"
+              [maxSize]="10"
+              previousText="&lsaquo;" 
+              nextText="&rsaquo;" 
+              firstText="&laquo;" 
+              lastText="&raquo;">
+          </pagination>
+          </div>
+
+          <div class="d-flex justify-content-center">
+            <button class="btn btn-outline-success" routerLink="Create">+</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

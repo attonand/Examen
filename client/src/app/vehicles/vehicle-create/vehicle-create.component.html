@@ -1,91 +1,78 @@
-<div class="container-fluid">
-  <div class="row">
-    @if(error() !== null) {
-      <div class="col col-lg-4">
-        <div class="card">
-          <h5 class="card-header">Errores</h5>
-          <div class="card-body">
-            @if(error()?.type === 'ValidationError') {
-              <ul>
-                @for(item of error()!.validationErrors; let idx = $index; track idx) {
-                  <li>
-                    {{ item }}
-                  </li>
-                }
-              </ul>
-            }
-          </div>
-        </div>
-      </div>
-    }
-  </div>
-  
+<div class="container-fluid w-75">
   <div class="row">
     <div class="col">
-      <form (ngSubmit)="onSubmit()" [id]="id">
-
-        <div class="row row-cols-1 row-cols sm-2 row-cols-md-3 row-cols-lg-4 g-3 gap-3 mb-4">
-          <div class="col">
-            <label class="form-label" for="Model">Model:</label>
-            <input class="form-control" id="Model" [formControl]="$any(form.controls.model)">
-            <div *ngIf="form.get('model')?.invalid && form.get('model')?.touched">
-              Model is required.
-            </div>
-          </div>
-          <div class="col">
-            <label class="form-label" for="Brand">Brand:</label>
-            <select class="form-select" id="Brand" name="brand" [(ngModel)]="form.controls.brand.value" (ngModelChange)="optionChanged($event)">
-              @if(form.controls.brand.value !== null) {
-                <option [value]="form.controls.brand.value">{{form.controls.brand.value.name}}</option>
-              }
-              @for(option of brandOptions; let idx = $index; track idx) {
-                <option [value]="option | json">{{ option.name }}</option>
-              }
-            </select>
-            <div *ngIf="form.get('brandId')?.invalid && form.get('brandId')?.touched">
-              Brand is required.
-            </div>
-          </div>
-          <div class="col">
-            <label class="form-label" for="Year">Year:</label>
-            <input class="form-control" id="Year" [formControl]="$any(form.controls.year)" type="number">
-            <div *ngIf="form.get('year')?.invalid && form.get('year')?.touched">
-              Year is required.
-            </div>
-          </div>
-          <div class="col">
-            <label class="form-label" for="Color">Color:</label>
-            <input class="form-control" id="Color" [formControl]="$any(form.controls.color)">
-            <div *ngIf="form.get('color')?.invalid && form.get('color')?.touched">
-              Color is required.
-            </div>
-          </div>
-          <div class="col">
-            <div class="">
-              @for(photo of form.controls.photos.controls; let idx = $index; track idx;) {
-                <div class="d-flex align-items-center mb-3 gap-3 g-3">
-                  <label class="flex-shrink-1" [for]="'urlDeFoto' + idx">URL: </label>
-                  <input class="form-control flex-grow-1" [id]="'urlDeFoto' + idx" type="text" [formControl]="$any(photo.controls.url)">
-                  <button class="btn btn-outline-danger" (click)="deletePhoto(idx)">-</button>
+      <div class="card shadow">
+        <div class="card-body">
+          <form (ngSubmit)="onSubmit()" [id]="id">
+    
+            <div class="row row-cols-1 row-cols sm-2 row-cols-md-3 row-cols-lg-4 g-3 gap-3 mb-4">
+              <div class="col">
+                <label class="form-label" for="Model">Model:</label>
+                <input class="form-control" id="Model" [formControl]="$any(form.controls.model)">
+                <div *ngIf="form.get('model')?.invalid && form.get('model')?.touched">
+                  Model is required.
                 </div>
-              }
-          </div>
-          </div>
+              </div>
+              <div class="col">
+                <label class="form-label" for="Brand">Brand:</label>
+                <select class="form-select" id="Brand" name="brand" [(ngModel)]="form.controls.brand.value" (ngModelChange)="optionChanged($event)">
+                  @if(form.controls.brand.value !== null) {
+                    <option [value]="form.controls.brand.value">{{form.controls.brand.value.name}}</option>
+                  }
+                  @for(option of brandOptions; let idx = $index; track idx) {
+                    <option [value]="option | json">{{ option.name }}</option>
+                  }
+                </select>
+                <div *ngIf="form.get('brandId')?.invalid && form.get('brandId')?.touched">
+                  Brand is required.
+                </div>
+              </div>
+              <div class="col">
+                <label class="form-label" for="Year">Year:</label>
+                <input class="form-control" id="Year" [formControl]="$any(form.controls.year)" type="number">
+                <div *ngIf="form.get('year')?.invalid && form.get('year')?.touched">
+                  Year is required.
+                </div>
+              </div>
+              <div class="col">
+                <label class="form-label" for="Color">Color:</label>
+                <input class="form-control" id="Color" [formControl]="$any(form.controls.color)">
+                <div *ngIf="form.get('color')?.invalid && form.get('color')?.touched">
+                  Color is required.
+                </div>
+              </div>
+              <div class="col">
+                  <h4>Fotos ({{form.controls.photos.controls.length | number}})</h4>
+                  
+                  @for(photo of form.controls.photos.controls; let idx = $index; track idx) {
+                    <div class="d-flex align-items-center mb-3 gap-3 g-3">
+                      <label class="flex-shrink-1" [for]="'urlDeFoto' + idx">URL: </label>
+                      <input class="form-control flex-grow-1" [id]="'urlDeFoto' + idx" type="text" [formControl]="$any(photo.controls.url)" (focus)="onPhotoChange($any(photo.value.url))">
+                      <a class="btn btn-outline-danger" (click)="deletePhoto(idx)">-</a>
+                    </div>
+                  }
+
+                  <div class="d-flex justify-content-center">
+                    <a class="btn btn-outline-success" (click)="addPhoto()">+</a>
+                  </div>
+              </div>
+              <div class="col image">
+                @if(url !== null) {
+                  <img [src]="url" class="rounded">
+                }
+                @else {
+                  <img src="https://www.shutterstock.com/image-vector/car-logo-icon-emblem-design-600nw-473088037.jpg" class="rounded">  
+                }
+              </div>
+            </div>
+    
+    
+            <div class="d-flex justify-content-center mt-4">
+              <button class="btn btn-outline-primary" type="submit" [disabled]="form.invalid">Submit</button>
+            </div>
+          </form>
         </div>
-
-        <h4>Fotos ({{form.controls.photos.controls.length | number}})</h4>
-
-        <a class="btn btn-success" (click)="addPhoto()">Agregar foto</a>
-
-        <div class="d-flex justify-content-center mt-4">
-          <button class="btn btn-primary" type="submit" [disabled]="form.invalid">Submit</button>
-        </div>
-
-        <code>
-          {{form.value | json}}
-        </code>
-
-      </form>
+      </div>
     </div>
   </div>
 </div>

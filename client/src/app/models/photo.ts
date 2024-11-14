@@ -8,8 +8,7 @@ export class Photo {
 }
 
 export const photosForTesting: Photo[] = [
-  new Photo({ url: 'https://localhost:5001/api/Photos/1', id: 1, }),
-  new Photo({ url: 'https://localhost:5001/api/Photos/2', id: 2, }),
-  new Photo({ url: 'https://localhost:5001/api/Photos/3', id: 3, }),
-  new Photo({ url: 'https://localhost:5001/api/Photos/4', id: 4, }),
+  new Photo({ url: 'https://tmna.aemassets.toyota.com/is/image/toyota/toyota/jellies/max/2024/corolla/nightshade/1868/218/36/5.png?fmt=png-alpha&wid=930&qlt=90', id: 1, }),
+  new Photo({ url: 'https://toyotaveracruz.com/Assets/ModelosNuevos/Img/Modelos/corolla/24/Colores/rojo.png', id: 2, }),
+  new Photo({ url: 'https://www.diariomotor.com/imagenes/2023/12/toyota-corolla-2024-p.jpg', id: 3, }),
 ];

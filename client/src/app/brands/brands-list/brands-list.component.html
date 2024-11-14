@@ -1,31 +1,46 @@
-<div class="container-fluid">
-  <div class="row">
-    <div class="col d-flex justify-content-end me-4">
-      <button class="btn btn-success" routerLink="Create">Agregar Marca</button>
-    </div>
-  </div>
+<div class="container-fluid w-75">
   <div class="row">
     <div class="col">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-          </tr>
-        </thead>
-        <tbody>
-          @for(item of paginatedResult()?.items; let idx = $index; track idx) {
-            <tr>
-              <td scope="col">
-                <a class="nav-link" [routerLink]="[ item.id ]">
-                  {{ item.id }}
-                </a>
-              </td>
-              <td scope="col">{{ item.name }}</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+      <div class="card shadow">
+        <div class="card-body">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for(item of paginatedResult()?.items; let idx = $index; track idx) {
+                <tr>
+                  <td scope="col">
+                    <a class="nav-link" [routerLink]="[ item.id ]">
+                      {{ item.id }}
+                    </a>
+                  </td>
+                  <td scope="col">{{ item.name }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+
+          <div class="d-flex justify-content-center">
+            <pagination 
+              [boundaryLinks]="true" 
+              [totalItems]="paginatedResult()?.pagination!.totalItems"
+              [itemsPerPage]="paginatedResult()?.pagination!.itemsPerPage"
+              (pageChanged)="pageChanged($event)"
+              [(ngModel)]="paginatedResult()?.pagination!.currentPage"
+              [maxSize]="10"
+              previousText="&lsaquo;" 
+              nextText="&rsaquo;" 
+              firstText="&laquo;" 
+              lastText="&raquo;"
+            >
+            </pagination>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>

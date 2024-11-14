@@ -44,10 +44,6 @@ public class VehiclesController(IUnitOfWork uow, IMapper mapper, IVehiclesServic
         int brandId = request.Brand.Id.Value;
         
         if (!await uow.BrandRepository.ExistsByIdAsync(brandId)) return NotFound($"La marca con ID {brandId} no fue encontrada.");
-        
-        // Brand? brand = await uow.BrandRepository.GetAsNoTrackingByIdAsync(brandId);
-
-        // if (brand == null) return BadRequest($"No existe marca con ID {request.Brand}");
 
         Vehicle vehicleToCreate = new();
 
@@ -87,10 +83,20 @@ public class VehiclesController(IUnitOfWork uow, IMapper mapper, IVehiclesServic
 
         if (itemToUpdate == null) return NotFound($"El vehículo con ID {id} no fue encontrado.");        
 
+        foreach(VehiclePhoto photoToRemove in itemToUpdate.VehiclePhotos) {
+            uow.PhotoRepository.Delete(photoToRemove.Photo);
+        }
+
         itemToUpdate.VehicleBrand = new(brandId);
         itemToUpdate.Color = request.Color;
         itemToUpdate.Year = request.Year;
         itemToUpdate.Model = request.Model;
+
+        foreach(VehiclePhotoCreateDto photo in request.Photos) {
+            if (string.IsNullOrWhiteSpace(photo.Url)) return BadRequest("Las fotos deben tener un URL");
+
+            itemToUpdate.VehiclePhotos.Add(new(photo.Url));
+        }
 
         uow.VehicleRepository.Update(itemToUpdate);
         

@@ -50,4 +50,21 @@ public class PhotoRepository(DataContext context, IMapper mapper) : IPhotoReposi
 
         return pagedList;
     }
+
+    public async Task<List<Photo>> GetListAsync(PhotoParams param)
+    {
+        IQueryable<Photo>? query = context.Photos
+            .AsNoTracking()
+            .AsQueryable()
+        ;
+
+        if(param.VehicleId.HasValue)
+        {   
+            query = query.Where(x => x.VehiclePhoto.VehicleId == param.VehicleId.Value);
+        }
+
+        List<Photo> list = await query.ToListAsync();
+
+        return list;
+    }
 }

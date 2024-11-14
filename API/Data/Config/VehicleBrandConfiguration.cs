@@ -14,14 +14,14 @@ public class VehicleBrandConfiguration : IEntityTypeConfiguration<VehicleBrand>
             .HasOne(x => x.Vehicle)
             .WithOne(x => x.VehicleBrand)
             .HasForeignKey<VehicleBrand>(x => x.VehicleId)
-            .OnDelete(DeleteBehavior.NoAction)
+            .OnDelete(DeleteBehavior.Cascade)
         ;
 
         builder
             .HasOne(x => x.Brand)
             .WithMany(x => x.VehicleBrands)
             .HasForeignKey(x => x.BrandId)
-            .OnDelete(DeleteBehavior.NoAction)
+            .OnDelete(DeleteBehavior.Cascade)
         ;
     }
 }

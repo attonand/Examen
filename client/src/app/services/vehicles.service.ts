@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable, inject, model, signal } from '@angular/core';
-import { environment } from '../../environments/environment';
+import { Injectable, inject, signal } from '@angular/core';
+import { environment } from 'src/environments/environment';
 import { setPaginatedResponse, setPaginationHeaders } from './paginationHelper';
-import { PaginatedResult } from '../models/pagination';
-import { Vehicle } from '../models/vehicle';
-import { VehicleParms } from '../models/vehicleParams';
+import { PaginatedResult } from 'src/app/models/pagination';
+import { Vehicle } from 'src/app/models/vehicle';
+import { VehicleParms } from 'src/app/models/vehicleParams';
 import { Observable, of } from 'rxjs';
 
 @Injectable({
@@ -35,6 +35,8 @@ export class VehiclesService {
 
     return this.http.get<Vehicle[]>(this.baseUrl, {observe: 'response', params}).subscribe({
       next: response => {
+
+  
         setPaginatedResponse(response, this.paginatedResult);
         this.cache.set(Object.values(this.params()).join('-'), response);
       }
@@ -51,15 +53,18 @@ export class VehiclesService {
     return this.http.get<Vehicle>(`${this.baseUrl}${id}`);
   }
 
-  update(id: number, model: any) {
-    return this.http.put(`${this.baseUrl}${id}`, model);
+  update(id: number, model: any): Observable<Vehicle> {
+    this.cache.clear();
+    return this.http.put<Vehicle>(`${this.baseUrl}${id}`, model);
   }
 
   delete(id: number) {
+    this.cache.clear();
     return this.http.delete(`${this.baseUrl}${id}`);
   }
 
   create(model: any): Observable<Vehicle> {
+    this.cache.clear();
     return this.http.post<Vehicle>(`${this.baseUrl}`, model);
   }
 }

@@ -19,9 +19,8 @@ public class VehiclesServices(DataContext context) : IVehiclesServices
             .SingleOrDefaultAsync();
 
         if (itemAsNoTracking == null) return true;
-
             if (!await DeleteVehiclePhotosAsync(itemAsNoTracking)) return false;
-            if (!await DeleteVehicleBrandAsync(itemAsNoTracking)) return false;
+            //if (!await DeleteVehicleBrandAsync(itemAsNoTracking)) return false;
 
             context.Vehicles.Remove(item);
 
@@ -39,7 +38,7 @@ public class VehiclesServices(DataContext context) : IVehiclesServices
             if (photoToDelete != null) {
                 context.Photos.Remove(photoToDelete);
                 
-                if (await context.SaveChangesAsync() > 0) return false;
+                if (await context.SaveChangesAsync() <= 0) return false;
             }
         }
         
@@ -56,7 +55,7 @@ public class VehiclesServices(DataContext context) : IVehiclesServices
         if(brandToDelete != null) {
             context.Brands.Remove(brandToDelete);
             
-            if(await context.SaveChangesAsync() > 0) return false;
+            if(await context.SaveChangesAsync() <= 0) return false;
         }
 
         return true;
