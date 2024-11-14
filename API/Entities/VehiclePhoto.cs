@@ -6,7 +6,6 @@ public class VehiclePhoto {
         Photo = new(url);
     }
 
-    
     public int VehicleId { get; set; } public Vehicle Vehicle { get; set; } = null!;
     public int PhotoId { get; set; } public Photo Photo { get; set; } = null!;
 }

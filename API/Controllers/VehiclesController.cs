@@ -73,49 +73,30 @@ public class VehiclesController(IUnitOfWork uow, IMapper mapper, IVehiclesServic
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<VehicleDto>> UpdateAsync(int id, [FromBody] VehicleCreateDto request)
+    public async Task<ActionResult<VehicleDto?>> UpdateAsync(int id, [FromBody] VehicleCreateDto request)
     {
+        if (request.Brand == null) return BadRequest("La marca del vehículo es requerida.");
+
+        if (!request.Brand.Id.HasValue) return BadRequest("El ID de la marca no fue proporcionado.");
+
+        int brandId = request.Brand.Id.Value;
+
+        if (!await uow.BrandRepository.ExistsByIdAsync(brandId)) return NotFound($"La marca con ID {brandId} no fue encontrada.");
         
-        await Task.Delay(0);
+        Vehicle? itemToUpdate = await uow.VehicleRepository.GetByIdAsync(id);
+
+        if (itemToUpdate == null) return NotFound($"El vehículo con ID {id} no fue encontrado.");        
+
+        itemToUpdate.VehicleBrand = new(brandId);
+        itemToUpdate.Color = request.Color;
+        itemToUpdate.Year = request.Year;
+        itemToUpdate.Model = request.Model;
+
+        uow.VehicleRepository.Update(itemToUpdate);
         
-        /*
-            var brand = await context.Brands
-                .FindAsync(request.Brand);
+        if (!await uow.CompleteAsync()) return BadRequest("Errores al guardar el vehículo.");
 
-            if (brand == null)
-            {
-                return BadRequest($"No existe marca con ID {request.Brand}");
-            }
-
-            var vehicle = await context.Vehicles.FindAsync(id);
-
-            if (vehicle == null)
-            {
-                return NotFound();
-            }
-
-            var oldPhotos = await context.Photos
-                .Where(p => p.VehicleId == id)
-                .ToListAsync();
-            context.Photos.RemoveRange(oldPhotos);
-
-            vehicle.BrandId = request.Brand;
-            vehicle.Model = request.Model;
-            vehicle.Year = request.Year;
-            vehicle.Color = request.Color;
-
-            var newPhotos = request.PhotoURLs
-                .Select(url => new Photo { VehicleId = vehicle.Id, URL = url }).ToList();
-            context.Photos.AddRange(newPhotos);
-
-            context.Vehicles.Add(vehicle);
-            await context.SaveChangesAsync();
-
-            return NoContent();
-            */
-
-        return Ok();
-        
+        return await uow.VehicleRepository.GetDtoByIdAsync(itemToUpdate.Id);        
     }
 
     [HttpDelete("{id}")]

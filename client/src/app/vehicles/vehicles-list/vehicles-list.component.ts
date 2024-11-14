@@ -36,4 +36,13 @@ export class VehiclesListComponent {
       this.service.params().pageNumber = event.page;
     }
   }
+
+  removeItem(id: number) {
+    console.log(id);
+    this.service.delete(id).subscribe({
+      next: (_) => {
+
+      },
+    });
+  }
 }

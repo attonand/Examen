@@ -11,5 +11,6 @@ public interface IVehicleRepository {
     Task<VehicleDto?> GetDtoByIdAsync(int id);
     void Delete(Vehicle vehicle);
     void Add(Vehicle vehicle);
+    void Update(Vehicle vehicle);
     Task<bool> ExistsByIdAsync(int id);
 }

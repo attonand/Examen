@@ -15,12 +15,14 @@
         </thead>
         <tbody>
           @for(item of paginatedResult()?.items; let idx = $index; track idx) {
-            <td scope="col">
-              <a class="nav-link" [routerLink]="[ item.id ]">
-                {{ item.id }}
-              </a>
-            </td>
-            <td scope="col">{{ item.name }}</td>
+            <tr>
+              <td scope="col">
+                <a class="nav-link" [routerLink]="[ item.id ]">
+                  {{ item.id }}
+                </a>
+              </td>
+              <td scope="col">{{ item.name }}</td>
+            </tr>
           }
         </tbody>
       </table>

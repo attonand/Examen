@@ -14,6 +14,8 @@ public class VehicleRepository(DataContext context, IMapper mapper) : IVehicleRe
 
     public void Delete(Vehicle vehicle) => context.Vehicles.Remove(vehicle);
 
+    public void Update(Vehicle vehicle) => context.Vehicles.Update(vehicle);
+
     public async Task<bool> ExistsByIdAsync(int id) =>
         await context.Vehicles.AnyAsync(x => x.Id == id);
 

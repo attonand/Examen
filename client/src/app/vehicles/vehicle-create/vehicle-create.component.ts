@@ -1,15 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, effect, inject, signal } from '@angular/core';
-import { AbstractControl, FormArray, FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-import { Brand } from '../../models/brands';
-import { BrandsService } from '../../services/brands.service';
-import { VehiclesService } from '../../services/vehicles.service';
-import { Photo, photosForTesting } from '../../models/photo';
-import { Vehicle } from '../../models/vehicle';
+import { AbstractControl, FormArray, FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 import { SelectOption } from 'src/app/models/selectOption';
 import { BadRequest } from 'src/app/models/badRequest';
 import { createId } from '@paralleldrive/cuid2';
+import { BrandsService } from 'src/app/services/brands.service';
+import { VehiclesService } from 'src/app/services/vehicles.service';
+import { photosForTesting } from 'src/app/models/photo';
+import { Vehicle } from 'src/app/models/vehicle';
 
 type PhotoType = {
   url: AbstractControl<string | null>,
@@ -27,9 +26,7 @@ type FormType = {
 @Component({
   selector: 'app-vehicle-create',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, FormsModule,
-    // , RouterModule
-  ],
+  imports: [ReactiveFormsModule, CommonModule, FormsModule],
   templateUrl: './vehicle-create.component.html',
 })
 export class VehicleCreateComponent {
@@ -87,16 +84,14 @@ export class VehicleCreateComponent {
       id: new FormControl(null) as any,
     });
 
+    debugger;
     this.form.controls.photos.push(formGroup);
-
     this.form.updateValueAndValidity();
   }
 
-  removePhoto(index: number) {
-
-  }
-
   onSubmit() {
+    debugger;
+
     this.submitted.set(true);
 
     this.service.create(this.form.value).subscribe({

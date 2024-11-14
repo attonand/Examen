@@ -1,1 +1,36 @@
-<p>vehicle-detail works!</p>
+<div class="container">
+    @if(item !== null) {
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>{{ item.model }}</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col d-flex justify-content-end">
+                                    <button class="btn btn-primary" [routerLink]="[ 'Edit' ]">Editar</button>
+                                </div>
+                            </div>                            
+
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item">{{ item.brand?.name }}</li>
+                                <li class="list-group-item">{{ item.color }}</li>
+                                <li class="list-group-item">{{ item.year }}</li>
+                              </ul>
+                              <div class="list">
+                                @for(photo of item.photos; let idx = $index; track idx)
+                                {
+                                    <div class="item">
+                                        <img [src]="photo.url" class="rounded mx-auto d-block vehicle-photo" [alt]="'Foto de auto ' + item.model + ' ' + item.year">
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
